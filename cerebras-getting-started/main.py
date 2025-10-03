@@ -4,9 +4,11 @@ load_dotenv()
 import os
 from cerebras.cloud.sdk import Cerebras
 
-client = Cerebras(
-    api_key=os.environ.get("CEREBRAS_API_KEY"),
-)
+client = Cerebras(api_key=os.environ.get("CEREBRAS_API_KEY"),)
+client.models.list()
+client.models.retrieve("llama3.1-8b")
+
+
 def get_chat_completion(message_content, model_name):
     chat_completion = client.chat.completions.create(
         messages=[
@@ -21,9 +23,9 @@ def get_chat_completion(message_content, model_name):
 
 
 # Example usage:
-if __name__ == "__main__":
-    response = get_chat_completion(
-        message_content="Why is fast inference important?",
-        model_name="llama-4-scout-17b-16e-instruct"
-    )
-    print(response)
+# if __name__ == "__main__":
+#     response = get_chat_completion(
+#         message_content="Why is fast inference important?",
+#         model_name="llama-4-scout-17b-16e-instruct"
+#     )
+#     print(response)

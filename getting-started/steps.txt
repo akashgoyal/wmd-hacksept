@@ -1,2 +1,0 @@
-pip install python-dotenv
-pip install --upgrade cerebras_cloud_sdk

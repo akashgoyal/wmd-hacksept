@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  repo-mcp:
+    build: ./repo_mcp
+    container_name: repo-mcp
+    ports:
+      - "5000:5000"
+  main-service:
+    build: ./main_service
+    container_name: main-service
+    environment:
+      GATEWAY_URL: "http://gateway-sim:8080"
+      REPO_MCP_NAME: "repo-mcp"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - gateway-sim
+
+  gateway-sim:
+    image: python:3.11-slim
+    container_name: gateway-sim
+    command: ["sh", "-c", "pip install flask requests && python -u /gateway/gateway.py"]
+    volumes:
+      - ./gateway_sim:/gateway
+    ports:
+      - "8080:8080"

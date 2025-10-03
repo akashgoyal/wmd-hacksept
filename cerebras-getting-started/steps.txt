@@ -1,0 +1,75 @@
+
+pip install python-dotenv
+pip install --upgrade cerebras_cloud_sdk
+
+
+## training env
+git clone https://github.com/Cerebras/modelzoo.git ./modelzoo
+
+python3.8 -m venv modelzoo_venv
+source modelzoo_venv/bin/activate
+
+pip install --upgrade pip
+pip install --editable ./modelzoo
+
+cerebras_install_check --mgmt_namespace <namespace>
+
+
+
+## workflow 
+export MODELZOO_PARENT=$(pwd) 
+
+mkdir finetuning_tutorial
+
+cp modelzoo/src/cerebras/modelzoo/tutorials/finetuning/* finetuning_tutorial
+
+cat pretraining_tutorial/model_config.yaml
+cat pretraining_tutorial/eeh_config.yaml
+cat pretraining_tutorial/train_data_config.yaml
+
+cszoo data_preprocess run --config finetuning_tutorial/train_data_config.yaml
+cszoo data_preprocess run --config finetuning_tutorial/valid_data_config.yaml
+## output_dir : preprocessed data in finetuning_tutorial/train_data/ and finetuning_tutorial/valid_data/ 
+
+
+### [optional] huggingafce setup 
+pip install --upgrade huggingface_hub==0.26.1
+
+## [optional] Inspect preprocessed data
+python $MODELZOO_DATA/tokenflow/launch_tokenflow.py \
+  --output_dir finetuning_data/train_data
+
+./modelzoo/src/cerebras/modelzoo/data_preparation/data_preprocessing/tokenflow/launch_tokenflow.py --output_dir finetuning_data/train_data 
+
+
+## Checkpoint weights 
+mkdir finetuning_tutorial/from_hf/{model_dir}
+
+# McGill-NLP/Llama-3-8B-Web 
+wget -P finetuning_tutorial/from_hf https://huggingface.co/McGill-NLP/Llama-3-8B-Web/resolve/main/pytorch_model.bin
+wget -P finetuning_tutorial/from_hf https://huggingface.co/McGill-NLP/Llama-3-8B-Web/resolve/main/config.json 
+
+# TinyLlama/TinyLlama_v1.1 
+wget -P finetuning_tutorial/from_hf/{model_dir} https://huggingface.co/TinyLlama/TinyLlama_v1.1/resolve/main/pytorch_model.bin
+wget -P finetuning_tutorial/from_hf/{model_dir} https://huggingface.co/TinyLlama/TinyLlama_v1.1/resolve/main/config.json 
+
+# openai-community/gpt2 
+wget -P finetuning_tutorial/from_hf/gpt2 https://huggingface.co/openai-community/gpt2/resolve/main/pytorch_model.bin
+wget -P finetuning_tutorial/from_hf/gpt2 https://huggingface.co/openai-community/gpt2/resolve/main/config.json 
+
+
+## 
+cszoo checkpoint convert --model gpt2 --src-fmt hf --tgt-fmt cs-current --config finetuning_tutorial/from_hf/config.json finetuning_tutorial/from_hf/pytorch_model.bin 
+# cszoo checkpoint convert --model tinyllama --src-fmt hf --tgt-fmt cs-current --config finetuning_tutorial/from_hf/tinyllama/config.json finetuning_tutorial/from_hf/tinyllama/pytorch_model.bin 
+
+## set dataloader path
+sed -i "s|data_dir: train_data|data_dir: ${MODELZOO_PARENT}/finetuning_tutorial/train_data|" \
+  finetuning_tutorial/model_config.yaml
+
+sed -i "s|data_dir: valid_data|data_dir: ${MODELZOO_PARENT}/finetuning_tutorial/valid_data|" \
+  finetuning_tutorial/model_config.yaml
+
+
+## 
+#############################
+cszoo model list
