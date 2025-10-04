@@ -1,6 +1,7 @@
 import requests
 from typing import Dict, Any, Optional
-import os
+import os, json
+from cerebras.cloud.sdk import Cerebras
 
 GITHUB_API = "https://api.github.com"
 
@@ -25,3 +26,18 @@ def call_gemini(prompt: str, gemini_token: str, model: str = "gemini-standard", 
     r = requests.post(url, json=body, headers=headers, timeout=30)
     r.raise_for_status()
     return r.json()
+
+
+def call_cerebras(prompt: str, cerebras_token: str, model: str = "llama3.1-8b", max_tokens:int=512) -> Dict[str, Any]:
+    client = Cerebras(api_key=cerebras_token)
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        model=model,
+        max_tokens=max_tokens,
+    )
+
+    return chat_completion.dict()
+

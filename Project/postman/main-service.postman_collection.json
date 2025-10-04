@@ -1,0 +1,128 @@
+{
+  "info": {
+    "name": "Main Service MCP API",
+    "_postman_id": "f05f64f7-8282-4df9-88c6-5057cb4db9a3",
+    "description": "Postman collection to test Python main-service endpoints communicating with MCP servers via docker-mcp-gateway. Uses Postman environment variables for tokens, repo owner, and repo name.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": ["{{baseUrl}}"],
+          "path": [""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Repo Overview",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": \"{{REPO_OWNER}}\",\n  \"repo\": \"{{REPO_NAME}}\",\n  \"tokens\": {\n    \"github\": \"{{GITHUB_TOKEN}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/repo-overview",
+          "host": ["{{baseUrl}}"],
+          "path": ["repo-overview"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Repo Commits",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": \"{{REPO_OWNER}}\",\n  \"repo\": \"{{REPO_NAME}}\",\n  \"tokens\": {\n    \"github\": \"{{GITHUB_TOKEN}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/repo-commits",
+          "host": ["{{baseUrl}}"],
+          "path": ["repo-commits"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Repo Collaborators",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": \"{{REPO_OWNER}}\",\n  \"repo\": \"{{REPO_NAME}}\",\n  \"tokens\": {\n    \"github\": \"{{GITHUB_TOKEN}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/repo-collaborators",
+          "host": ["{{baseUrl}}"],
+          "path": ["repo-collaborators"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Repo LinkedIn Project",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": \"{{REPO_OWNER}}\",\n  \"repo\": \"{{REPO_NAME}}\",\n  \"tokens\": {\n    \"github\": \"{{GITHUB_TOKEN}}\",\n    \"cerebras\": \"{{CEREBRAS_TOKEN}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/repo-linkedin-project",
+          "host": ["{{baseUrl}}"],
+          "path": ["repo-linkedin-project"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Repo Recommendations",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": \"{{REPO_OWNER}}\",\n  \"repo\": \"{{REPO_NAME}}\",\n  \"tokens\": {\n    \"github\": \"{{GITHUB_TOKEN}}\",\n    \"cerebras\": \"{{CEREBRAS_TOKEN}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/repo-recommendations",
+          "host": ["{{baseUrl}}"],
+          "path": ["repo-recommendations"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Repo Meet and Collaborators",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"owner\": \"{{REPO_OWNER}}\",\n  \"repo\": \"{{REPO_NAME}}\",\n  \"tokens\": {\n    \"github\": \"{{GITHUB_TOKEN}}\",\n    \"slack\": \"{{SLACK_TOKEN}}\",\n    \"google_docs\": \"{{GOOGLE_DOCS_TOKEN}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/repo-meet-and-collaborators",
+          "host": ["{{baseUrl}}"],
+          "path": ["repo-meet-and-collaborators"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" }
+  ]
+}

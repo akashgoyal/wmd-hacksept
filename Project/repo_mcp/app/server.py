@@ -7,7 +7,7 @@ call_gemini is a generic stub — put your real Gemini API integration there (or
 """
 
 from flask import Flask, request, jsonify
-from .utils import github_get, call_gemini
+from .utils import github_get, call_gemini, call_cerebras
 import traceback
 
 app = Flask(__name__)
@@ -98,7 +98,8 @@ def handle_linkedin_project(payload, tokens):
     owner = payload.get("owner")
     repo = payload.get("repo")
     token = tokens.get("github")
-    gemini_token = tokens.get("gemini")
+    # gemini_token = tokens.get("gemini")
+    cerebras_token = tokens.get("cerebras")
     repo_data = github_get(f"https://api.github.com/repos/{owner}/{repo}", token=token)
     readme = ""
     # try to fetch README
@@ -116,7 +117,8 @@ Repository description: {repo_data.get('description')}
 README excerpt:
 {(readme[:1600] + '...') if readme else 'N/A'}
 """
-    llm_resp = call_gemini(prompt, gemini_token, max_tokens=300)
+    # llm_resp = call_gemini(prompt, gemini_token, max_tokens=300)
+    llm_resp = call_cerebras(prompt, cerebras_token, max_tokens=300)
     # The structure depends on Gemini; return raw and text if available
     return {"linkedin_text": llm_resp.get("text") if isinstance(llm_resp, dict) else str(llm_resp), "raw": llm_resp}
 
@@ -127,7 +129,8 @@ def handle_recommendations(payload, tokens):
     owner = payload.get("owner")
     repo = payload.get("repo")
     token = tokens.get("github")
-    gemini_token = tokens.get("gemini")
+    # gemini_token = tokens.get("gemini")
+    cerebras_token = tokens.get("cerebras")
     # fetch basic repo info and a small set of files/commits
     repo_data = github_get(f"https://api.github.com/repos/{owner}/{repo}", token=token)
     commits = github_get(f"https://api.github.com/repos/{owner}/{repo}/commits", token=token, params={"per_page": 10})
@@ -142,7 +145,8 @@ Provide:
 3) 3 related open-source projects to study for inspiration
 Return JSON list-like text.
 """
-    resp = call_gemini(prompt, gemini_token, max_tokens=600)
+    # resp = call_gemini(prompt, gemini_token, max_tokens=600)
+    resp = call_cerebras(prompt, cerebras_token, max_tokens=600)
     return {"recommendations_raw": resp}
 
 def handle_meet_and_collab(payload, tokens):
@@ -152,7 +156,8 @@ def handle_meet_and_collab(payload, tokens):
     owner = payload.get("owner")
     repo = payload.get("repo")
     token = tokens.get("github")
-    gemini_token = tokens.get("gemini")
+    # gemini_token = tokens.get("gemini")
+    cerebras_token = tokens.get("cerebras")
     contributors = github_get(f"https://api.github.com/repos/{owner}/{repo}/contributors", token=token, params={"per_page": 10})
     contrib_list = [c.get("login") for c in contributors[:6]]
     prompt = f"""
@@ -162,5 +167,6 @@ Create a 30-minute meeting agenda for discussing improvements to {owner}/{repo}.
 - Pre-meeting reading/tasks
 Return in plain text.
 """
-    resp = call_gemini(prompt, gemini_token, max_tokens=400)
+    # resp = call_gemini(prompt, gemini_token, max_tokens=400)
+    resp = call_cerebras(prompt, cerebras_token, max_tokens=400)
     return {"agenda": resp.get("text") if isinstance(resp, dict) else str(resp), "suggested_collaborators": contrib_list}

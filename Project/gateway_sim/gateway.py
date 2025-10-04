@@ -9,6 +9,6 @@ def execute(mcp_name):
     url = f"http://{mcp_name}:5000/execute"
     r = requests.post(url, json=request.get_json(), timeout=60)
     return (r.content, r.status_code, r.headers.items())
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
-

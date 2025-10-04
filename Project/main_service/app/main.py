@@ -17,6 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+MCP_GATEWAY_URL = os.getenv("MCP_GATEWAY_URL", "http://docker-mcp-gateway:8000")
 MCP_NAME = os.getenv("REPO_MCP_NAME", "repo-mcp")  # the registered name at docker-mcp-gateway
 
 
@@ -28,7 +29,7 @@ async def root():
 def extract_tokens_from_request(request: Request) -> dict:
     """
     Extract tokens from JSON body 'tokens' or from headers (prefixed with X-Token-)
-    e.g. X-Token-GitHub, X-Token-Gemini, X-Token-Slack, X-Token-GDocs
+    e.g. X-Token-GitHub, X-Token-Gemini, X-Token-Slack, X-Token-GDocs, X-Token-Cerebras
     """
     tokens = {}
     try:
@@ -36,58 +37,75 @@ def extract_tokens_from_request(request: Request) -> dict:
     except Exception:
         body = None
     # We'll rely on endpoint handlers to parse body; here only headers:
-    for k in ["Github", "Gemini", "Slack", "GDocs"]:
+    for k in ["Github", "Gemini", "Slack", "GDocs", "Cerebras"]:
         h = request.headers.get(f"x-token-{k.lower()}")
         if h:
             tokens[k.lower()] = h
     return tokens
 
 
-async def get_tokens(payload_tokens: Optional[dict], request):
-    # Merge tokens from payload and headers (payload wins)
-    tokens = payload_tokens.copy() if payload_tokens else {}
-    for k in ["github","gemini","slack","gdocs"]:
-        header_token = request.headers.get(f"x-token-{k}")
-        if header_token and not tokens.get(k):
-            tokens[k] = header_token
+async def get_tokens(payload: dict, request: Request):
+    """
+    Extract tokens from payload (sent by frontend) or headers.
+    """
+    tokens = payload.get("tokens", {})
+    if not tokens:
+        tokens = {
+            "github": request.headers.get("X-GITHUB-TOKEN"),
+            "slack": request.headers.get("X-SLACK-TOKEN"),
+            "gdocs": request.headers.get("X-GDOCS-TOKEN"),
+            "gemini": request.headers.get("X-GEMINI-TOKEN"),
+            "cerebras": request.headers.get("X-CEREBRAS-TOKEN"),
+        }
     return tokens
 
-
+    
 @app.post("/repo-overview")
-async def repo_overview(req: RepoRequest, request: Request):
+async def repo_overview(request: Request):
     """
     Forwards to repo-mcp action: 'overview'
     """
-    payload = req.dict()
-    ret = await call_mcp_gateway(MCP_NAME, "overview", payload, tokens=await get_tokens((request.json().get("tokens") if await request.body() else {}), request))
+    body = await request.json()
+    tokens = await get_tokens(body, request)
+    ret = await call_mcp_gateway(MCP_NAME, "overview", body, tokens)
     return ret
+
 
 @app.post("/repo-commits")
-async def repo_commits(req: RepoRequest, request: Request):
-    payload = req.dict()
-    ret = await call_mcp_gateway(MCP_NAME, "commits", payload, tokens=await get_tokens((request.json().get("tokens") if await request.body() else {}), request))
+async def repo_commits(request: Request):
+    body = await request.json()
+    tokens = await get_tokens(body, request)
+    ret = await call_mcp_gateway(MCP_NAME, "commits", body, tokens)
     return ret
+
 
 @app.post("/repo-collaborators")
-async def repo_collaborators(req: RepoRequest, request: Request):
-    payload = req.dict()
-    ret = await call_mcp_gateway(MCP_NAME, "collaborators", payload, tokens=await get_tokens((request.json().get("tokens") if await request.body() else {}), request))
+async def repo_collaborators(request: Request):
+    body = await request.json()
+    tokens = await get_tokens(body, request)
+    ret = await call_mcp_gateway(MCP_NAME, "collaborators", body, tokens)
     return ret
+
 
 @app.post("/repo-linkedin-project")
-async def repo_linkedin_project(req: RepoRequest, request: Request):
-    payload = req.dict()
-    ret = await call_mcp_gateway(MCP_NAME, "linkedin_project", payload, tokens=await get_tokens((request.json().get("tokens") if await request.body() else {}), request), timeout=60)
+async def repo_linkedin_project(request: Request):
+    body = await request.json()
+    tokens = await get_tokens(body, request)
+    ret = await call_mcp_gateway(MCP_NAME, "linkedin_project", body, tokens)
     return ret
+
 
 @app.post("/repo-recommendations")
-async def repo_recommendations(req: RepoRequest, request: Request):
-    payload = req.dict()
-    ret = await call_mcp_gateway(MCP_NAME, "recommendations", payload, tokens=await get_tokens((request.json().get("tokens") if await request.body() else {}), request), timeout=60)
+async def repo_recommendations(request: Request):
+    body = await request.json()
+    tokens = await get_tokens(body, request)
+    ret = await call_mcp_gateway(MCP_NAME, "recommendations", body, tokens)
     return ret
 
+
 @app.post("/repo-meet-and-collaborators")
-async def repo_meet_and_collaborators(req: RepoRequest, request: Request):
-    payload = req.dict()
-    ret = await call_mcp_gateway(MCP_NAME, "meet_and_collab", payload, tokens=await get_tokens((request.json().get("tokens") if await request.body() else {}), request), timeout=60)
+async def repo_meet_and_collaborators(request: Request):
+    body = await request.json()
+    tokens = await get_tokens(body, request)
+    ret = await call_mcp_gateway(MCP_NAME, "meet_and_collaborators", body, tokens)
     return ret
